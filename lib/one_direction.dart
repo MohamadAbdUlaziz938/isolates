@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'dart:isolate';
 
 import 'package:isolates/person.dart';
-
+/// While the this example is best used for a single-shot task
+/// we can easily reuse the isolate we created above by setting up two ports for bidirectional communication,
+/// and sending more data to deserialize while listening to the port stream for the results.
 Future<Person> fetchUser() async {
   /// use receivePort to receive data from isolate and handle send port to isolate to send data to me
   ReceivePort port = ReceivePort();

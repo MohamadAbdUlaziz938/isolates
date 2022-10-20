@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:isolate';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:isolates/person.dart';
 
@@ -38,21 +40,26 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
+  int _runningFunction(int arg) {
+    int sum = 0;
+    for (int i = 1; i <= arg; i++) {
+      sleep(Duration(seconds: 1));
+      print(i);
+      sum += i;
+    }
+    return sum;
+  }
+
   void _incrementCounter() async {
-    /// While the this example is best used for a single-shot task
     await fetchUser();
 
-    /// we can easily reuse the isolate we created above by setting up two ports for bidirectional communication,
-    /// and sending more data to deserialize while listening to the port stream for the results.
     //========
-    int index = 0;
-    Timer.periodic(Duration(seconds: 2), (timer) {
-      index = index + 1;
-      debugPrint('$index');
-    });
     setState(() {
       _counter++;
     });
+  }
+  Future<int> pauseFunction() async {
+    return _runningFunction(10);
   }
 
   @override
@@ -61,16 +68,17 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              '$_counter',
+      body:FutureBuilder(
+        future: compute(_runningFunction,2),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return Text(
+              '${snapshot.data}',
               style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ),
+            );
+          }
+          return CircularProgressIndicator();
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
